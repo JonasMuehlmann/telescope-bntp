@@ -19,7 +19,7 @@ local update_documents = function(self)
     end
 end
 
-local bntp_documents_picker = function(opts)
+local documents = function(opts)
   pickers.new(opts, {
     prompt_title = "bntp documents",
     finder = finders.new_table {
@@ -31,6 +31,6 @@ end
 
 return require("telescope").register_extension({
 	exports = {
-		bntp_documents_picker = bntp_documents_picker,
+		documents = documents,
 	},
 })
