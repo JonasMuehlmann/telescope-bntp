@@ -26,6 +26,7 @@ local documents = function(opts)
       results = documents.get_tags()
     },
     sorter = conf.generic_sorter(opts),
+    previewer = conf.file_previewer(opts),
   }):find()
 end
 
