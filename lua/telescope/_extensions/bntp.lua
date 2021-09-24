@@ -19,8 +19,7 @@ local update_documents = function(self)
     end
 end
 
--- our picker function: colors
-local colors = function(opts)
+local bntp_documents_picker = function(opts)
   pickers.new(opts, {
     prompt_title = "bntp documents",
     finder = finders.new_table {
@@ -30,5 +29,8 @@ local colors = function(opts)
   }):find()
 end
 
--- to execute the function
-colors()
+return require("telescope").register_extension({
+	exports = {
+		bntp_documents_picker = bntp_documents_picker,
+	},
+})
