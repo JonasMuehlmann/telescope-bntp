@@ -1,6 +1,6 @@
 -- https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md#guide-to-your-first-picker
 
-local documents = require('telescope-bntp.documents')
+local documents = require('bntp.documents')
 
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
