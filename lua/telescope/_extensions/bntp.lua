@@ -1,6 +1,6 @@
 -- https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md#guide-to-your-first-picker
 
-local documents = require('bntp.documents')
+local documents = require('telescope._extensions.bntp.documents')
 
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
@@ -29,6 +29,7 @@ local documents = function(opts)
   }):find()
 end
 
+documents()
 return require("telescope").register_extension({
 	exports = {
 		documents = documents,
