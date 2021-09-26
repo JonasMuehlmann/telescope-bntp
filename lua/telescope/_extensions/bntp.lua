@@ -30,7 +30,6 @@ local documents = function(opts)
   }):find()
 end
 
-documents()
 return require("telescope").register_extension({
 	exports = {
 		documents = documents,
