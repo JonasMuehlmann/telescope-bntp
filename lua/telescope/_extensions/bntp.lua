@@ -88,11 +88,24 @@ local  related_pages = function(opts)
     }):find()
 end
 
+local  sources = function(opts)
+    opts.entry_maker = make_entry.gen_from_file(opts)
+
+    pickers.new(opts, {
+        prompt_title = "bntp document references",
+        finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","--sources", vim.fn.expand('%:p')}, opts),
+        sorter = conf.file_sorter(opts),
+        previewer = conf.file_previewer(opts),
+    }):find()
+end
+
+
 return require("telescope").register_extension({
 	exports = {
 		documents = documents,
         links = links,
         backlinks = backlinks,
-        related_pages = related_pages ,
+        related_pages = related_pages,
+        sources =sources ,
 	},
 })

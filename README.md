@@ -20,9 +20,11 @@ require('telescope').load_extension('bntp')
 -- List a document's backlinks
 :Telescope bntp backlinks
 
-
 -- List a document's related pages
 :Telescope bntp related_pages
+
+-- List a document's sources
+:Telescope bntp sourcs
 ```
 
 # Additional Mappings
