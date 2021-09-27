@@ -4,6 +4,7 @@ local documents = require('telescope-bntp.documents')
 
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
+local actions = require "telescope.actions"
 local conf = require("telescope.config").values
 
 local items = {}
@@ -19,6 +20,20 @@ local update_documents = function(self)
     end
 end
 
+local insert_link = function(prompt_bufnr)
+    local linkDestionation = actions.get_selected_entry().value[1]
+    local insertedText = "[]".."("..linkDestionation..")"
+
+    actions._close(prompt_bufnr, true)
+
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    vim.api.nvim_buf_set_text(0, cursor[1], cursor[2], cursor[1], cursor[2], { insertedText })
+
+    vim.schedule(function()
+        vim.api.nvim_win_set_cursor(0, { cursor[1], cursor[2] + 1})
+    end)
+end
+
 local bntp_documents_picker = function(opts)
   pickers.new(opts, {
     prompt_title = "bntp documents",
@@ -29,6 +44,7 @@ local bntp_documents_picker = function(opts)
   }):find()
 end
 
+bntp_documents_picker()
 return require("telescope").register_extension({
 	exports = {
 		bntp_documents_picker = bntp_documents_picker,
