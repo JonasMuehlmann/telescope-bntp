@@ -106,6 +106,6 @@ return require("telescope").register_extension({
         links = links,
         backlinks = backlinks,
         related_pages = related_pages,
-        sources =sources ,
+        sources =sources,
 	},
 })

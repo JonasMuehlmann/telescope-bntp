@@ -24,7 +24,7 @@ require('telescope').load_extension('bntp')
 :Telescope bntp related_pages
 
 -- List a document's sources
-:Telescope bntp sourcs
+:Telescope bntp sources
 ```
 
 # Additional Mappings
