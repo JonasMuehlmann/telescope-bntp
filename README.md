@@ -15,9 +15,16 @@ require('telescope').load_extension('bntp')
 :Telescope bntp documents
 
 -- List a document's links
-:Telescope bntp documents
+:Telescope bntp links
+
+-- List a document's backlinks
+:Telescope bntp backlinks
+
+
+-- List a document's related pages
+:Telescope bntp related_pages
 ```
 
 # Additional Mappings
 
-`<c-l>` in insert or normal mode to insert a `markdown` link to the selected document.
+`documents` picker: `<c-l>` in insert or normal mode to insert a `markdown` link to the selected document.
