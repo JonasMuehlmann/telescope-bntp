@@ -6,18 +6,19 @@ local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
 local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
+local make_entry = require "telescope.make_entry"
 local conf = require("telescope.config").values
 
-local items = {}
---
--- TODO: Find a good way to gurantee up to date documents:
+local document_paths = {}
+
+-- TODO: Find a good way to gurantee up to date data
 -- Reacting to db changes?
 -- Checking for new tags every few seconds?
 local update_documents = function(self)
     local  documents_ = bntp_documents.get_documents()
 
     for _, document in ipairs(documents_) do
-        table.insert(items, document)
+        table.insert(document_paths, document)
     end
 end
 
@@ -38,20 +39,20 @@ local insert_link = function(prompt_bufnr)
 end
 
 local documents = function(opts)
-  pickers.new(opts, {
-    prompt_title = "bntp documents",
-    finder = finders.new_table {
-      results = bntp_documents.get_tags()
-    },
-    sorter = conf.generic_sorter(opts),
-    previewer = conf.file_previewer(opts),
-    attach_mappings = function(prompt_bufnr, map)
-        map('i', '<c-l>', insert_link)
-        map('n', '<c-l>', insert_link)
+    opts.entry_maker = make_entry.gen_from_file(opts)
 
-        return true
-    end,
-  }):find()
+    pickers.new(opts, {
+        prompt_title = "bntp documents",
+        finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","list"}, opts),
+        sorter = conf.file_sorter(opts),
+        previewer = conf.file_previewer(opts),
+        attach_mappings = function(prompt_bufnr, map)
+            map('i', '<c-l>', insert_link)
+            map('n', '<c-l>', insert_link)
+
+            return true
+        end,
+    }):find()
 end
 
 return require("telescope").register_extension({
