@@ -5,7 +5,7 @@ local bntp_documents = require('telescope._extensions.bntp.documents')
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
 local actions = require "telescope.actions"
-local action_state = require('telescope.actions.state')
+local action_state = require "telescope.actions.state"
 local conf = require("telescope.config").values
 
 local items = {}
