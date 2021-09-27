@@ -43,7 +43,7 @@ local documents = function(opts)
 
     pickers.new(opts, {
         prompt_title = "bntp documents",
-        finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","list"}, opts),
+        finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","--list"}, opts),
         sorter = conf.file_sorter(opts),
         previewer = conf.file_previewer(opts),
         attach_mappings = function(prompt_bufnr, map)
@@ -55,8 +55,20 @@ local documents = function(opts)
     }):find()
 end
 
+local  links = function(opts)
+    opts.entry_maker = make_entry.gen_from_file(opts)
+
+    pickers.new(opts, {
+        prompt_title = "bntp outgoing links",
+        finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","--links", vim.fn.expand('%:p')}, opts),
+        sorter = conf.file_sorter(opts),
+        previewer = conf.file_previewer(opts),
+    }):find()
+end
+
 return require("telescope").register_extension({
 	exports = {
 		documents = documents,
+        links = links,
 	},
 })

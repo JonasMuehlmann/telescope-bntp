@@ -11,6 +11,10 @@ require('telescope').load_extension('bntp')
 # Available commands
 
 ```vim
+-- List documents
+:Telescope bntp documents
+
+-- List a document's links
 :Telescope bntp documents
 ```
 
