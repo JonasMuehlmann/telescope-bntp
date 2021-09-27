@@ -8,8 +8,12 @@ Add the following line somewhere after `require('telescope').setup()`.
 require('telescope').load_extension('bntp')
 ```
 
-## Available commands
+# Available commands
 
 ```vim
 :Telescope bntp documents
 ```
+
+# Additional Mappings
+
+`<c-l>` in insert or normal mode to insert a `markdown` link to the selected document.
