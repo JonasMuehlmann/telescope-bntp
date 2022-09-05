@@ -1,7 +1,5 @@
 -- https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md#guide-to-your-first-picker
 
-local bntp_documents = require('telescope._extensions.bntp.documents')
-
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
 local actions = require "telescope.actions"
@@ -9,22 +7,9 @@ local action_state = require "telescope.actions.state"
 local make_entry = require "telescope.make_entry"
 local conf = require("telescope.config").values
 
-local document_paths = {}
-
--- TODO: Find a good way to gurantee up to date data
--- Reacting to db changes?
--- Checking for new tags every few seconds?
-local update_documents = function(self)
-    local  documents_ = bntp_documents.get_documents()
-
-    for _, document in ipairs(documents_) do
-        table.insert(document_paths, document)
-    end
-end
-
 local insert_link = function(prompt_bufnr)
     local linkDestionation = action_state.get_selected_entry().value
-    local insertedText = "[]".."("..linkDestionation..")"
+    local insertedText = "["..linkDestionation.."]".."("..linkDestionation..")"
 
     actions._close(prompt_bufnr, true)
 
@@ -43,10 +28,10 @@ local documents = function(opts)
 
     pickers.new(opts, {
         prompt_title = "bntp documents",
-        finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","--list"}, opts),
+        finder = finders.new_oneshot_job(vim.tbl_flatten{"bntp.go", "document","list", "--path-format"}, opts),
         sorter = conf.file_sorter(opts),
         previewer = conf.file_previewer(opts),
-        attach_mappings = function(prompt_bufnr, map)
+        attach_mappings = function(_, map)
             map('i', '<c-l>', insert_link)
             map('n', '<c-l>', insert_link)
 
@@ -55,12 +40,61 @@ local documents = function(opts)
     }):find()
 end
 
+-- TODO:This all is pretty messy, but I want to get it done ASAP
 local  links = function(opts)
     opts.entry_maker = make_entry.gen_from_file(opts)
 
+    local filterCurrentDocument = [[
+    {
+        "path": {
+            "operand": {
+                "operand": "]]..vim.fn.expand('%:p')..[["
+            },
+            "operator": "FilterEqual"
+        }
+    }
+    ]]
+
+
+        local createLinkedDocumentIDsFragment = function()
+        local getCurrentDocumentCommandHandle = io.popen("bntp.go document find-first --filter '" .. filterCurrentDocument.."'")
+        local currentDocumentSerialized = getCurrentDocumentCommandHandle:read("*a")
+        getCurrentDocumentCommandHandle:close()
+
+        -- if currentDocumentSerialized == "null" then
+        --    -- TODO: Empty return
+        -- end
+
+        local currentDocument = vim.json.decode(currentDocumentSerialized)
+        local documentIDs = currentDocument["linked_documentIDs"]
+
+        return table.concat(documentIDs, ",")
+    end
+
+
+    local makeFilterLinkedDocuments = function(linkedDocumentIDsFragment)
+        return [[
+    {
+        "id": {
+            "operand": {
+                "operands": []]..linkedDocumentIDsFragment..[[]
+            },
+            "operator": "FilterIn"
+        }
+    }
+    ]]
+end
     pickers.new(opts, {
         prompt_title = "bntp document links",
-        finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","--links", vim.fn.expand('%:p')}, opts),
+        finder = finders.new_oneshot_job(vim.tbl_flatten{
+            "bntp.go",
+            "document",
+            "list",
+            "--path-format",
+            "--filter",
+            makeFilterLinkedDocuments(createLinkedDocumentIDsFragment())
+        }, opts),
+
         sorter = conf.file_sorter(opts),
         previewer = conf.file_previewer(opts),
     }):find()
@@ -69,35 +103,84 @@ end
 local  backlinks = function(opts)
     opts.entry_maker = make_entry.gen_from_file(opts)
 
+    local filterCurrentDocument = [[
+    {
+        "path": {
+            "operand": {
+                "operand": "]]..vim.fn.expand('%:p')..[["
+            },
+            "operator": "FilterEqual"
+        }
+    }
+    ]]
+
+
+        local createBacklinkedDocumentIDsFragment = function()
+        local getCurrentDocumentCommandHandle = io.popen("bntp.go document find-first --filter '" .. filterCurrentDocument.."'")
+        local currentDocumentSerialized = getCurrentDocumentCommandHandle:read("*a")
+        getCurrentDocumentCommandHandle:close()
+
+        -- if currentDocumentSerialized == "null" then
+        --    -- TODO: Empty return
+        -- end
+
+        local currentDocument = vim.json.decode(currentDocumentSerialized)
+        local documentIDs = currentDocument["backlinked_documentIDs"]
+
+        return table.concat(documentIDs, ",")
+    end
+
+
+    local makeFilterBacklinkedDocuments = function(linkedDocumentIDsFragment)
+        return [[
+    {
+        "id": {
+            "operand": {
+                "operands": []]..linkedDocumentIDsFragment..[[]
+            },
+            "operator": "FilterIn"
+        }
+    }
+    ]]
+end
     pickers.new(opts, {
-        prompt_title = "bntp document backlinks",
-        finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","--backlinks", vim.fn.expand('%:p')}, opts),
+        prompt_title = "bntp document links",
+        finder = finders.new_oneshot_job(vim.tbl_flatten{
+            "bntp.go",
+            "document",
+            "list",
+            "--path-format",
+            "--filter",
+            makeFilterBacklinkedDocuments(createBacklinkedDocumentIDsFragment())
+        }, opts),
+
         sorter = conf.file_sorter(opts),
         previewer = conf.file_previewer(opts),
     }):find()
 end
 
-local  related_pages = function(opts)
-    opts.entry_maker = make_entry.gen_from_file(opts)
 
-    pickers.new(opts, {
-        prompt_title = "bntp document references",
-        finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","--related_pages", vim.fn.expand('%:p')}, opts),
-        sorter = conf.file_sorter(opts),
-        previewer = conf.file_previewer(opts),
-    }):find()
-end
+-- local  related_pages = function(opts)
+--     opts.entry_maker = make_entry.gen_from_file(opts)
 
-local  sources = function(opts)
-    opts.entry_maker = make_entry.gen_from_file(opts)
+--     pickers.new(opts, {
+--         prompt_title = "bntp document references",
+--         finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","--related_pages", vim.fn.expand('%:p')}, opts),
+--         sorter = conf.file_sorter(opts),
+--         previewer = conf.file_previewer(opts),
+--     }):find()
+-- end
 
-    pickers.new(opts, {
-        prompt_title = "bntp document references",
-        finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","--sources", vim.fn.expand('%:p')}, opts),
-        sorter = conf.file_sorter(opts),
-        previewer = conf.file_previewer(opts),
-    }):find()
-end
+-- local  sources = function(opts)
+--     opts.entry_maker = make_entry.gen_from_file(opts)
+
+--     pickers.new(opts, {
+--         prompt_title = "bntp document references",
+--         finder = finders.new_oneshot_job(vim.tbl_flatten{"documentmanager","--sources", vim.fn.expand('%:p')}, opts),
+--         sorter = conf.file_sorter(opts),
+--         previewer = conf.file_previewer(opts),
+--     }):find()
+-- end
 
 
 return require("telescope").register_extension({
@@ -105,7 +188,7 @@ return require("telescope").register_extension({
 		documents = documents,
         links = links,
         backlinks = backlinks,
-        related_pages = related_pages,
-        sources =sources,
+        -- related_pages = related_pages,
+        -- sources =sources,
 	},
 })
